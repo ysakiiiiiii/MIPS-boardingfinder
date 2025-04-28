@@ -1,0 +1,9 @@
+1 Free WiFi
+2 Electricity Bill Included in Monthly
+3 Water Bill Included in Monthly
+4 Own Kitchen
+5 Own Comfort Room
+6 Shared Kitchen
+7 Shared Comfort Room
+8 With Living Room
+9 With Parking Lot
