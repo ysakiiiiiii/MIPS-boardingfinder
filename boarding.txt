@@ -1,0 +1,6 @@
+1 CozyStay
+2 SunnyBoard
+3 BudgetNest
+4 Rainy
+5 Honolulu
+6 Islanders

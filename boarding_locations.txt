@@ -1,0 +1,6 @@
+1 Cozy Stay|Sunny Board|Morning Dew Lodge|Urban Haven|Serene Nights
+2 BudgetNest|Simple Stay|Pocket Inn|Traveler’s Rest|Economy Haven
+3 Rainy House|Windy House|Cloudy Corner|Foggy Nights Inn|Breeze Inn
+4 Royal Palace|King’s Retreat|Majestic Stay|Queen’s Resthouse|Crown Lodge
+5 British Kingdom|Philippine Bahay Kubo|Colonial Comforts|Tahanan Stay|London Lights Hostel
+6 British Nest|Hawainaera|Tropical Nights|Surfside Stay|Waikiki Boarders

@@ -1,0 +1,6 @@
+[ 1 ] Batac
+[ 2 ] Bacarra
+[ 3 ] Vintar
+[ 4 ] Laoag 
+[ 5 ] San Nicolas
+[ 6 ] Paoay
