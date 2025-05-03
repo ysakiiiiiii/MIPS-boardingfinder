@@ -1,0 +1,7 @@
+[ 1 ] School
+[ 2 ] Gym
+[ 3 ] Grocery
+[ 4 ] Bar
+[ 5 ] Fast Food Chain
+[ 6 ] School Supplies
+[ 7 ] Laundry

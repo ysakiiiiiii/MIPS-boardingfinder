@@ -1,0 +1,35 @@
+Sunny Board|1 3 4 6 7
+Cozy Stay|1 2 4 6 7
+Morning Dew Lodge|1 2 3 4 5
+Urban Haven|2 4 6
+Serene Nights|1 3 7
+|
+BudgetNest|2 3 5 1
+Simple Stay|1 5 6
+Pocket Inn|2 4 7
+Travelers Rest|3 6
+Economy Haven|1 3 5
+|
+Rainy House|2 4 6
+Windy House|1 2 3
+Cloudy Corner|3 5 6
+Foggy Nights Inn|1 4 7
+Breeze Inn|2 3 6
+|
+Royal Palace|1 2 3 6 |
+Kings Retreat|3 4 7 |
+Majestic Stay|2 5 6 |
+Queens Resthouse|1 3 5 |
+Crown Lodge|1 2 3 4 6 |
+|
+British Kingdom|1 4 6
+Philippine Bahay Kubo|2 3 7
+Colonial Comforts|1 5 6
+Tahanan Stay|2 4 7
+London Lights Hostel|1 3 6
+|
+British Nest|2 5 7
+Hawainaera|1 3 4
+Tropical Nights|2 4 6
+Surfside Stay|1 2 3 4
+Waikiki Boarders|3 5 7

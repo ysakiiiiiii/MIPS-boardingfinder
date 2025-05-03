@@ -1,0 +1,15 @@
+[ 1 ] Free Wifi  
+[ 2 ] Air Conditioning  
+[ 3 ] Own Kitchen  
+[ 4 ] Study Area  
+[ 5 ] CCTV Security  
+[ 6 ] Laundry Area  
+[ 7 ] Water Dispenser  
+[ 8 ] Smoke Detector 
+[ 9 ] Gated Entrance
+[ 10 ] Furnished Rooms  
+[ 11 ] Private Bathroom  
+[ 12 ] Personal Locker  
+[ 13 ] Visitor Area  
+[ 14 ] Curfew-Free  
+[ 15 ] Water-Bills Included In Electricity Bills
