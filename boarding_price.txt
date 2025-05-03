@@ -1,25 +1,35 @@
-Cozy Stay|3000
 Sunny Board|2000
-Morning Dew Lodge|3200
+Cozy Stay|2300
+Morning Dew Lodge|1400
 Urban Haven|3600
 Serene Nights|3800
-BudgetNest|800
+|
+BudgetNest|800 
 Simple Stay|3200
 Pocket Inn|3400
 Travelers Rest|2800
 Economy Haven|2800
+|
 Rainy House|2100
 Windy House|3200
 Cloudy Corner|650
 Foggy Nights Inn|1600
 Breeze Inn|2300
+|
 Royal Palace|3000
 Kings Retreat|3200
 Majestic Stay|1000
-Queen’s Resthouse|1230
+Queens Resthouse|1230
 Crown Lodge|1250
+|
 British Kingdom|2000
 Philippine Bahay Kubo|1650
 Colonial Comforts|1750
 Tahanan Stay|2600
 London Lights Hostel|1500
+|
+British Nest|2500
+Hawainaera|3500
+Tropical Nights|2600
+Surfside Stay|5000
+Waikiki Boarders|3450
