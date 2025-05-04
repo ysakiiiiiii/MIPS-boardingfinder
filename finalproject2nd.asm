@@ -7,6 +7,7 @@ proximity_master: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/proximity_mas
 price_master: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/boarding_price.txt"
 boarding_amenities: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/boarding_amenities.txt"
 amenities_master: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/amenities_master.txt"
+boarding_details: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/boarding_details.txt"
 
 # Buffers
 locations_bufferlist: .space 1024
@@ -14,7 +15,7 @@ proximity_masterlist: .space 1024
 amenities_masterlist: .space 1024
 price_buffer: .space 1024
 amenities_buffer: .space 1024
-read_buffer: .space 2048
+read_buffer: .space 4096
 name_buffer1: .space 2048
 name_buffer2: .space 1024
 line_buffer: .space 1024 
@@ -34,6 +35,8 @@ final_results: .space 4096   # Final filtered results
 current_filter_ptr: .word 0
 
 # Messages
+welcome_msg: .asciiz "\n\nWELCOME TO SMART BOARDING HOUSE FINDER\n"
+menu_prompt: .asciiz "\nPlease choose an option:\n1. Find available boarding house\n2. Exit\n"
 prompt_instruction: .asciiz "\nPlease put a space every after entered id (e.g. 1 2 3 6)\n"
 prompt_proximity: .asciiz "Enter ID of proximity to search: "
 prompt_amenities: .asciiz "Enter ID of amenities to search: "
@@ -48,12 +51,43 @@ amenities_choices: .asciiz "\nAmenities Choices:\n"
 invalid_input_msg: .asciiz "\nInvalid input! Please try again.\n"
 file_error_msg: .asciiz "\nError opening file!\n"
 newLine: .asciiz "\n"
+try_again_msg: .asciiz "\nDo you want to search again? (1=Yes, 0=No): "
 delimiter: .byte '|'
 
 .text
 .globl main
 
 main:
+    # Display welcome message
+    li $v0, 4
+    la $a0, welcome_msg
+    syscall
+    
+main_menu:
+    # Display menu options
+    li $v0, 4
+    la $a0, menu_prompt
+    syscall
+    
+    # Get user choice
+    li $v0, 5
+    syscall
+    
+    # Process menu choice
+    beq $v0, 1, find_boarding
+    beq $v0, 2, exit_program
+    j invalid_menu_input
+
+invalid_menu_input:
+    li $v0, 4
+    la $a0, invalid_input_msg
+    syscall
+    j main_menu
+
+find_boarding:
+    # Clear buffers for new search
+    jal clear_buffers
+    
     # Display location choices
     li $v0, 4
     la $a0, location_choices
@@ -144,7 +178,7 @@ location_input_valid:
     li $a1, 32 
     syscall
 
-    # Filter by proximity (third filter)
+    # Filter by proximity (second filter)
     jal filter_by_proximity
 
     # Get max budget from user with validation
@@ -236,6 +270,26 @@ print_results:
     # Print final results
     jal print_final_results
 
+    # Ask if user wants to search again
+try_again:
+    li $v0, 4
+    la $a0, try_again_msg
+    syscall
+    
+    li $v0, 5
+    syscall
+    
+    beq $v0, 1, find_boarding
+    beq $v0, 0, exit_program
+    j invalid_try_again_input
+
+invalid_try_again_input:
+    li $v0, 4
+    la $a0, invalid_input_msg
+    syscall
+    j try_again
+
+exit_program:
     # Exit program
     li $v0, 10
     syscall
@@ -244,8 +298,58 @@ file_error:
     li $v0, 4
     la $a0, file_error_msg
     syscall
-    li $v0, 10
-    syscall
+    j try_again
+
+# --------------------------------------------------
+# Clear buffers for new search
+# --------------------------------------------------
+clear_buffers:
+    # Clear filtered_dorm1
+    la $t0, filtered_dorm1
+    li $t1, 2048
+clear_loop1:
+    sb $zero, 0($t0)
+    addiu $t0, $t0, 1
+    subiu $t1, $t1, 1
+    bnez $t1, clear_loop1
+    
+    # Clear filtered_dorm2
+    la $t0, filtered_dorm2
+    li $t1, 2048
+clear_loop2:
+    sb $zero, 0($t0)
+    addiu $t0, $t0, 1
+    subiu $t1, $t1, 1
+    bnez $t1, clear_loop2
+    
+    # Clear filtered_dorm3
+    la $t0, filtered_dorm3
+    li $t1, 2048
+clear_loop3:
+    sb $zero, 0($t0)
+    addiu $t0, $t0, 1
+    subiu $t1, $t1, 1
+    bnez $t1, clear_loop3
+    
+    # Clear filtered_dorm4
+    la $t0, filtered_dorm4
+    li $t1, 2048
+clear_loop4:
+    sb $zero, 0($t0)
+    addiu $t0, $t0, 1
+    subiu $t1, $t1, 1
+    bnez $t1, clear_loop4
+    
+    # Clear final_results
+    la $t0, final_results
+    li $t1, 4096
+clear_loop5:
+    sb $zero, 0($t0)
+    addiu $t0, $t0, 1
+    subiu $t1, $t1, 1
+    bnez $t1, clear_loop5
+    
+    jr $ra
 
 # --------------------------------------------------
 # Filter by location (first filter)
@@ -317,6 +421,13 @@ location_advance_line:
 
 location_filter_done:
     sb $zero, 0($s3)          # Null-terminate filtered_dorm1
+    
+    li $v0, 4
+    la $a0, newLine
+    syscall
+    la $a0, filtered_dorm1
+    syscall
+    
     jr $ra
 
 # --------------------------------------------------
@@ -536,6 +647,10 @@ proximity_next_dorm:
     j proximity_process_dorms
 
 proximity_filter_done:
+	li $v0, 4
+    la $a0, newLine
+    syscall
+    la $a0, filtered_dorm3
     jr $ra
 
 # --------------------------------------------------
@@ -690,6 +805,11 @@ price_next_dorm:
     j price_process_dorms
 
 price_filter_done:
+	li $v0, 4
+    la $a0, newLine
+    syscall
+    la $a0, filtered_dorm2
+    syscall
     jr $ra
 
 # --------------------------------------------------
@@ -926,37 +1046,142 @@ copy_done:
     jr $ra
 
 # --------------------------------------------------
-# Print final results
+# Print final results from boarding_details.txt (using ! as delimiter)
 # --------------------------------------------------
 print_final_results:
     li $v0, 4
     la $a0, results_header
     syscall
     
+    # Check if there are any results
     la $t0, final_results
     lb $t1, 0($t0)
     beqz $t1, print_no_results
     
-print_results_loop:
-    lb $t1, 0($t0)
-    beqz $t1, print_done
-    beq $t1, '|', print_newline
-    li $v0, 11
-    move $a0, $t1
+    # Open boarding_details file
+    li $v0, 13
+    la $a0, boarding_details
+    li $a1, 0
     syscall
+    bltz $v0, file_error
+    move $s0, $v0
+    
+    # Read entire file content
+    li $v0, 14
+    move $a0, $s0
+    la $a1, read_buffer
+    li $a2, 4096
+    syscall
+    
+    # Close file
+    li $v0, 16
+    move $a0, $s0
+    syscall
+    
+    # Process each dorm in final_results
+    la $s1, final_results
+    
+print_next_dorm:
+    # Extract next dorm name
+    la $t0, name_buffer1
+    li $t1, 0
+    
+copy_dorm_name_loop:
+    lb $t2, 0($s1)
+    beq $t2, '|', end_copy_name
+    beqz $t2, print_done
+    sb $t2, 0($t0)
+    addiu $s1, $s1, 1
     addiu $t0, $t0, 1
-    j print_results_loop
-
-print_newline:
+    addiu $t1, $t1, 1
+    j copy_dorm_name_loop
+    
+end_copy_name:
+    sb $zero, 0($t0)         # Null-terminate name
+    addiu $s1, $s1, 1        # Skip '|'
+    
+    # Search for dorm in details file
+    la $s2, read_buffer
+    
+search_loop:
+    # Look for "Name: " pattern
+    lb $t3, 0($s2)
+    beqz $t3, next_dorm      # End of file
+    
+    bne $t3, 'N', next_char
+    lb $t3, 1($s2)
+    bne $t3, 'a', next_char
+    lb $t3, 2($s2)
+    bne $t3, 'm', next_char
+    lb $t3, 3($s2)
+    bne $t3, 'e', next_char
+    lb $t3, 4($s2)
+    bne $t3, ':', next_char
+    lb $t3, 5($s2)
+    bne $t3, ' ', next_char
+    
+    # Found "Name: ", now compare names
+    addiu $s2, $s2, 6       # Skip "Name: "
+    la $t0, name_buffer1
+    
+compare_names:
+    lb $t3, 0($s2)
+    lb $t4, 0($t0)
+    beqz $t4, found_match   # End of our name
+    bne $t3, $t4, next_char
+    addiu $s2, $s2, 1
+    addiu $t0, $t0, 1
+    j compare_names
+    
+found_match:
+    # Print from start of record (previous '!') to next '!'
     li $v0, 4
     la $a0, newLine
     syscall
-    addiu $t0, $t0, 1
-    j print_results_loop
-
+    
+    # Find start of record
+    la $t5, read_buffer
+    move $t6, $s2
+    subiu $t6, $t6, 6       # Back to start of "Name: "
+    
+find_record_start:
+    ble $t6, $t5, print_record  # At start of buffer
+    lb $t7, -1($t6)
+    beq $t7, '!', found_record_start
+    subiu $t6, $t6, 1
+    j find_record_start
+    
+found_record_start:
+    addiu $t6, $t6, 1       # Skip the '!'
+    
+print_record:
+    li $v0, 11
+    
+print_char:
+    lb $a0, 0($t6)
+    beqz $a0, next_dorm
+    beq $a0, '!', end_record
+    syscall
+    addiu $t6, $t6, 1
+    j print_char
+    
+end_record:
+    li $v0, 4
+    la $a0, newLine
+    syscall
+    j next_dorm
+    
+next_char:
+    addiu $s2, $s2, 1
+    j search_loop
+    
+next_dorm:
+    j print_next_dorm
+    
 print_no_results:
     li $v0, 4
     la $a0, no_match_msg
     syscall
 
 print_done:
+    jr $ra

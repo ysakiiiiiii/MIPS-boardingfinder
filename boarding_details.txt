@@ -1,0 +1,463 @@
+Name: Sunny Board
+Location: Batac
+Price: 2000
+Proximities:
+- School
+- Grocery
+- Bar
+- School Supplies
+- Laundry
+Amenities:
+- Free Wifi
+- Air Conditioning
+- Own Kitchen
+- Study Area
+- Laundry Area
+- Water Dispenser
+- Furnished Rooms
+- Private Bathroom
+!
+Name: Cozy Stay
+Location: Batac
+Price: 2300
+Proximities:
+- School
+- Gym
+- Bar
+- School Supplies
+- Laundry
+Amenities:
+- Free Wifi
+- Air Conditioning
+- Study Area
+- CCTV Security
+- Laundry Area
+- Gated Entrance
+- Furnished Rooms
+!
+Name: Morning Dew Lodge
+Location: Batac
+Price: 1400
+Proximities:
+- School
+- Gym
+- Grocery
+- Bar
+- Fast Food Chain
+Amenities:
+- Free Wifi
+- Own Kitchen
+- Study Area
+- CCTV Security
+- Laundry Area
+- Water Dispenser
+- Furnished Rooms
+- Personal Locker
+!
+Name: Urban Haven
+Location: Batac
+Price: 3600
+Proximities:
+- Gym
+- Bar
+- School Supplies
+Amenities:
+- Air Conditioning
+- Own Kitchen
+- Study Area
+- Laundry Area
+- Gated Entrance
+!
+Name: Serene Nights
+Location: Batac
+Price: 3800
+Proximities:
+- School
+- Grocery
+- Laundry
+Amenities:
+- Free Wifi
+- Own Kitchen
+- CCTV Security
+- Water Dispenser
+- Furnished Rooms
+- Visitor Area
+!
+Name: BudgetNest
+Location: Bacarra
+Price: 800
+Proximities:
+- Gym
+- Grocery
+- Fast Food Chain
+- School
+Amenities:
+- Free Wifi
+- Air Conditioning
+- Own Kitchen
+- CCTV Security
+- Laundry Area
+- Furnished Rooms
+!
+Name: Simple Stay
+Location: Bacarra
+Price: 3200
+Proximities:
+- School
+- Fast Food Chain
+- School Supplies
+Amenities:
+- Free Wifi
+- Study Area
+- Laundry Area
+- Furnished Rooms
+- Private Bathroom
+- Personal Locker
+!
+Name: Pocket Inn
+Location: Bacarra
+Price: 3400
+Proximities:
+- Gym
+- Bar
+- Laundry
+Amenities:
+- Air Conditioning
+- Study Area
+- Water Dispenser
+- Furnished Rooms
+- Curfew-Free
+!
+Name: Travelers Rest
+Location: Bacarra
+Price: 2800
+Proximities:
+- Grocery
+- School Supplies
+Amenities:
+- Free Wifi
+- Own Kitchen
+- CCTV Security
+- Laundry Area
+- Gated Entrance
+!
+Name: Economy Haven
+Location: Bacarra
+Price: 2800
+Proximities:
+- School
+- Grocery
+- Fast Food Chain
+Amenities:
+- Free Wifi
+- Study Area
+- CCTV Security
+- Furnished Rooms
+- Water-Bills Included In Electricity Bills
+!
+Name: Rainy House
+Location: Vintar
+Price: 2100
+Proximities:
+- Gym
+- Bar
+- School Supplies
+Amenities:
+- Air Conditioning
+- Own Kitchen
+- CCTV Security
+- Laundry Area
+- Gated Entrance
+!
+Name: Windy House
+Location: Vintar
+Price: 3200
+Proximities:
+- School
+- Gym
+- Grocery
+Amenities:
+- Free Wifi
+- Air Conditioning
+- Study Area
+- Laundry Area
+- Furnished Rooms
+!
+Name: Cloudy Corner
+Location: Vintar
+Price: 650
+Proximities:
+- Grocery
+- Fast Food Chain
+- School Supplies
+Amenities:
+- Free Wifi
+- Own Kitchen
+- CCTV Security
+- Laundry Area
+- Water Dispenser
+- Furnished Rooms
+!
+Name: Foggy Nights Inn
+Location: Vintar
+Price: 1600
+Proximities:
+- School
+- Bar
+- Laundry
+Amenities:
+- Free Wifi
+- Study Area
+- CCTV Security
+- Laundry Area
+- Water Dispenser
+- Visitor Area
+!
+Name: Breeze Inn
+Location: Vintar
+Price: 2300
+Proximities:
+- Gym
+- Grocery
+- School Supplies
+Amenities:
+- Free Wifi
+- Air Conditioning
+- Study Area
+- Laundry Area
+- Furnished Rooms
+!
+Name: Royal Palace
+Location: Laoag
+Price: 3000
+Proximities:
+- School
+- Gym
+- Grocery
+- School Supplies
+Amenities:
+- Free Wifi
+- Air Conditioning
+- Study Area
+- Laundry Area
+- Furnished Rooms
+- Private Bathroom
+- Personal Locker
+!
+Name: Kings Retreat
+Location: Laoag
+Price: 3200
+Proximities:
+- Grocery
+- Bar
+- Laundry
+Amenities:
+- Own Kitchen
+- Study Area
+- Laundry Area
+- Gated Entrance
+- Furnished Rooms
+- Visitor Area
+!
+Name: Majestic Stay
+Location: Laoag
+Price: 1000
+Proximities:
+- Gym
+- Fast Food Chain
+- School Supplies
+Amenities:
+- Free Wifi
+- Air Conditioning
+- CCTV Security
+- Laundry Area
+- Furnished Rooms
+- Personal Locker
+!
+Name: Queens Resthouse
+Location: Laoag
+Price: 1230
+Proximities:
+- School
+- Grocery
+- Fast Food Chain
+Amenities:
+- Free Wifi
+- Study Area
+- CCTV Security
+- Laundry Area
+- Furnished Rooms
+- Curfew-Free
+!
+Name: Crown Lodge
+Location: Laoag
+Price: 1250
+Proximities:
+- School
+- Gym
+- Grocery
+- Bar
+- School Supplies
+Amenities:
+- Free Wifi
+- Air Conditioning
+- Study Area
+- CCTV Security
+- Laundry Area
+- Water Dispenser
+- Furnished Rooms
+- Private Bathroom
+!
+Name: British Kingdom
+Location: San Nicolas
+Price: 2000
+Proximities:
+- School
+- Bar
+- School Supplies
+Amenities:
+- Free Wifi
+- Own Kitchen
+- Study Area
+- CCTV Security
+- Laundry Area
+- Furnished Rooms
+!
+Name: Philippine Bahay Kubo
+Location: San Nicolas
+Price: 1650
+Proximities:
+- Gym
+- Grocery
+- Laundry
+Amenities:
+- Air Conditioning
+- Own Kitchen
+- CCTV Security
+- Water Dispenser
+- Gated Entrance
+- Furnished Rooms
+!
+Name: Colonial Comforts
+Location: San Nicolas
+Price: 1750
+Proximities:
+- School
+- Fast Food Chain
+- School Supplies
+Amenities:
+- Free Wifi
+- Own Kitchen
+- Study Area
+- CCTV Security
+- Laundry Area
+- Water-Bills Included In Electricity Bills
+!
+Name: Tahanan Stay
+Location: San Nicolas
+Price: 2600
+Proximities:
+- Gym
+- Bar
+- Laundry
+Amenities:
+- Air Conditioning
+- Study Area
+- Laundry Area
+- Furnished Rooms
+- Private Bathroom
+- Curfew-Free
+!
+Name: London Lights Hostel
+Location: San Nicolas
+Price: 1500
+Proximities:
+- School
+- Grocery
+- School Supplies
+Amenities:
+- Free Wifi
+- Air Conditioning
+- Own Kitchen
+- Laundry Area
+- Furnished Rooms
+- Personal Locker
+!
+Name: British Nest
+Location: Paoay
+Price: 2500
+Proximities:
+- Gym
+- Fast Food Chain
+- Laundry
+Amenities:
+- Air Conditioning
+- Own Kitchen
+- Laundry Area
+- Water Dispenser
+- Furnished Rooms
+- Visitor Area
+!
+Name: Hawainaera
+Location: Paoay
+Price: 3500
+Proximities:
+- School
+- Grocery
+- Bar
+Amenities:
+- Free Wifi
+- Air Conditioning
+- Own Kitchen
+- CCTV Security
+- Laundry Area
+- Furnished Rooms
+!
+Name: Tropical Nights
+Location: Paoay
+Price: 2600
+Proximities:
+- Gym
+- Bar
+- School Supplies
+Amenities:
+- Free Wifi
+- Air Conditioning
+- Study Area
+- CCTV Security
+- Laundry Area
+- Gated Entrance
+!
+Name: Surfside Stay
+Location: Paoay
+Price: 5000
+Proximities:
+- School
+- Gym
+- Grocery
+- Bar
+Amenities:
+- Free Wifi
+- Air Conditioning
+- Own Kitchen
+- Study Area
+- CCTV Security
+- Laundry Area
+- Furnished Rooms
+!
+Name: Waikiki Boarders
+Location: Paoay
+Price: 3450
+Proximities:
+- Grocery
+- Fast Food Chain
+- Laundry
+Amenities:
+- Free Wifi
+- Own Kitchen
+- Study Area
+- CCTV Security
+- Laundry Area
+- Water Dispenser
+- Furnished Rooms
+!
