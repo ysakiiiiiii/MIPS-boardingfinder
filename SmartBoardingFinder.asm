@@ -30,47 +30,47 @@
 
 .data
 # ============================= FILE PATHS ===================================
-boarding_locations: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/boarding_locations.txt"
-locations_master: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/locations_master.txt"
-boarding_proximity: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/boarding_proximity.txt"
-proximity_master: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/proximity_master.txt"
-price_master: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/boarding_price.txt"
-boarding_amenities: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/boarding_amenities.txt"
-amenities_master: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/amenities_master.txt"
-boarding_details: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/boarding_details.txt"
+boarding_locations: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/boarding_locations.txt"  # Path to dorm location mappings
+locations_master: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/locations_master.txt"      # Master list of available locations
+boarding_proximity: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/boarding_proximity.txt"  # Dorm proximity mappings
+proximity_master: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/proximity_master.txt"      # Master list of proximity types
+price_master: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/boarding_price.txt"            # Dorm price information
+boarding_amenities: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/boarding_amenities.txt"  # Dorm amenities mappings
+amenities_master: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/amenities_master.txt"      # Master list of amenities
+boarding_details: .asciiz "D:/MIPS-Assembly-Project-Smart Boarding/boarding_details.txt"      # Detailed dorm information
 
 # ============================= DATA BUFFERS =================================
-# Buffers for storing file contents
-locations_bufferlist: .space 1024     # Stores locations master file
-proximity_masterlist: .space 1024     # Stores proximity master file
-amenities_masterlist: .space 1024     # Stores amenities master file
+# Buffers for storing file contents during processing
+locations_bufferlist: .space 1024     # Stores locations master file data
+proximity_masterlist: .space 1024     # Stores proximity master file data
+amenities_masterlist: .space 1024     # Stores amenities master file data
 
-# Working buffers for processing
-price_buffer: .space 1024             # Stores price data during filtering
-amenities_buffer: .space 1024         # Stores amenities data during filtering
-read_buffer: .space 4096              # General purpose read buffer (largest)
-name_buffer1: .space 2048             # Primary name buffer for comparisons
-name_buffer2: .space 1024             # Secondary name buffer for comparisons
+# Working buffers for intermediate processing
+price_buffer: .space 1024             # Temporary storage for price data
+amenities_buffer: .space 1024         # Temporary storage for amenities data
+read_buffer: .space 4096              # General purpose buffer for file reading
+name_buffer1: .space 2048             # Primary buffer for dorm name comparisons
+name_buffer2: .space 1024             # Secondary buffer for name comparisons
 line_buffer: .space 1024              # Buffer for reading individual lines
 proximity_buffer: .space 32           # Stores proximity IDs during processing
 amenities_temp_buffer: .space 32      # Temporary buffer for amenities processing
-id_buffer: .space 32                  # Stores user input IDs
-id_buffer_temp: .space 8              # Temporary buffer for single ID processing
+id_buffer: .space 32                  # Stores user input IDs for filtering
+id_buffer_temp: .space 8              # Temporary storage for single ID processing
 
 # ========================== FILTERED RESULTS ================================
-filtered_dorm1: .space 2048  # Results after location filter (format: name|name|...)
+filtered_dorm1: .space 2048  # Results after location filter (pipe-delimited names)
 filtered_dorm2: .space 2048  # Results after price filter
 filtered_dorm3: .space 2048  # Results after proximity filter
 filtered_dorm4: .space 2048  # Results after amenities filter
-final_results: .space 4096   # Final filtered results before printing
+final_results: .space 4096   # Final filtered results before display
 
 # ============================== POINTERS ====================================
-current_filter_ptr: .word 0  # Pointer to track current position in filtered buffers
+current_filter_ptr: .word 0  # Tracks current position in filtered results buffers
 
 # ============================= MESSAGES =====================================
 # User interface messages
 welcome_msg: .asciiz "\n\nWELCOME TO SMART BOARDING HOUSE FINDER\n"
-menu_prompt: .asciiz "\nPlease choose an option:\n1. Find available boarding house\n2. Exit\n"
+menu_prompt: .asciiz "\nPlease choose an option:\n1. Find available boarding house\n2. Exit\n Choice: "
 prompt_instruction: .asciiz "\nPlease put a space every after entered id (e.g. 1 2 3 6)\n"
 prompt_proximity: .asciiz "Enter ID of proximity to search: "
 prompt_amenities: .asciiz "Enter ID of amenities to search: "
@@ -96,82 +96,77 @@ delimiter: .byte '|'         # Field delimiter used in data files
 .globl main
 
 ###############################################################################
-# MAIN PROGRAM                                                                #
-# Description: Controls the overall program flow                              #
-# Registers used:                                                             #
-#   $v0 - System call function selector                                       #
-#   $a0 - Argument for system calls                                           #
-#   $s0-$s7 - Saved registers for persistent data                             #
+# MAIN PROGRAM FLOW                                                           #
+# Controls the high-level program execution and menu navigation               #
 ###############################################################################
 main:
-    # Display welcome message
+    # Display welcome message to user
     li $v0, 4
     la $a0, welcome_msg
     syscall
     
 main_menu:
-    # Display menu options
+    # Present main menu options to user
     li $v0, 4
     la $a0, menu_prompt
     syscall
     
-    # Get user choice
+    # Get user's menu selection
     li $v0, 5
     syscall
     
-    # Process menu choice
-    beq $v0, 1, find_boarding
-    beq $v0, 2, exit_program
-    j invalid_menu_input
+    # Branch based on user selection
+    beq $v0, 1, find_boarding   # Start search process
+    beq $v0, 2, exit_program    # Exit program
+    j invalid_menu_input        # Handle invalid input
 
 invalid_menu_input:
+    # Notify user of invalid menu selection
     li $v0, 4
     la $a0, invalid_input_msg
     syscall
-    j main_menu
+    j main_menu                # Return to menu
 
-#############################################################################
-# FIND_BOARDING                                                             #
-# Description: Main function for searching boarding houses                  #
-# Registers used:                                                           #
-#   $s0 - File descriptor                                                   #
-#   $s1 - Selected location ID                                              #
-#   $s2 - Maximum budget                                                    #
-#   $s3-$s6 - Filter result buffers                                        	#
-#############################################################################
+###############################################################################
+# FIND_BOARDING - MAIN SEARCH FUNCTION                                       #
+# Orchestrates the multi-step filtering process                              #
+###############################################################################
 find_boarding:
-    # Clear buffers for new search
+    # Prepare for new search by clearing previous results
     jal clear_buffers
     
- # ===================== LOCATION FILTER ==================== #
-    # Display location choices
+    # ===================== LOCATION FILTER PHASE ==================== #
+    # Display location choices header
     li $v0, 4
     la $a0, location_choices
     syscall
     
-    # Open and print locations master file
+    # Open and display locations master file
     li $v0, 13
     la $a0, locations_master
     li $a1, 0
     syscall
-    bltz $v0, file_error
-    move $s0, $v0
+    bltz $v0, file_error       # Handle file open error
+    move $s0, $v0              # Save file descriptor
     
+    # Read locations data into buffer
     li $v0, 14
     move $a0, $s0
     la $a1, locations_bufferlist
     li $a2, 1024
     syscall
     
+    # Close the locations file
     li $v0, 16
     move $a0, $s0
     syscall
     
+    # Display available locations to user
     li $v0, 4
     la $a0, locations_bufferlist
     syscall
 
-    # Get location input from user with validation
+    # Get and validate user's location selection
 get_location_input:
     li $v0, 4
     la $a0, prompt_location
@@ -179,28 +174,28 @@ get_location_input:
     
     li $v0, 5
     syscall
-    blez $v0, invalid_location_input
-    move $s1, $v0          # Store location choice in $s1
+    blez $v0, invalid_location_input  # Validate input > 0
+    move $s1, $v0                    # Store location choice
     j location_input_valid
 
 invalid_location_input:
+    # Handle invalid location input
     li $v0, 4
     la $a0, invalid_input_msg
     syscall
-    j get_location_input
+    j get_location_input             # Retry input
 
 location_input_valid:
-    # Filter by location (first filter)
+    # Perform location-based filtering
     jal filter_by_location
     
-# ===================== PROXIMITY FILTER ===================== #
-
-    # Display proximity choices
+    # ===================== PROXIMITY FILTER PHASE ==================== #
+    # Display proximity choices header
     li $v0, 4
     la $a0, proximity_choices
     syscall
     
-    # Open and print proximity master file
+    # Open and display proximity master file
     li $v0, 13
     la $a0, proximity_master
     li $a1, 0
@@ -208,25 +203,29 @@ location_input_valid:
     bltz $v0, file_error
     move $s0, $v0
     
+    # Read proximity data into buffer
     li $v0, 14
     move $a0, $s0
     la $a1, proximity_masterlist
     li $a2, 1024
     syscall
     
+    # Close proximity file
     li $v0, 16
     move $a0, $s0
     syscall
     
+    # Display available proximity options
     li $v0, 4
     la $a0, proximity_masterlist
     syscall
     
-    # Get proximity IDs from user
+    # Instruct user on input format
     li $v0, 4
     la $a0, prompt_instruction
     syscall
     
+    # Get user's proximity preferences
     li $v0, 4
     la $a0, prompt_proximity
     syscall
@@ -236,12 +235,11 @@ location_input_valid:
     li $a1, 32 
     syscall
 
-    # Filter by proximity (second filter)
+    # Perform proximity-based filtering
     jal filter_by_proximity
     
-# ===================== PRICE FILTER ===================== #
-
-    # Get max budget from user with validation
+    # ===================== PRICE FILTER PHASE ==================== #
+    # Get and validate user's maximum budget
 get_budget_input:
     li $v0, 4
     la $a0, prompt_maxbudget
@@ -249,23 +247,23 @@ get_budget_input:
     
     li $v0, 5
     syscall
-    blez $v0, invalid_budget_input
-    move $s2, $v0          # Store max budget in $s2
+    blez $v0, invalid_budget_input  # Validate budget > 0
+    move $s2, $v0                  # Store max budget
     j budget_input_valid
 
 invalid_budget_input:
+    # Handle invalid budget input
     li $v0, 4
     la $a0, invalid_input_msg
     syscall
-    j get_budget_input
+    j get_budget_input            # Retry input
 
 budget_input_valid:
-    # Filter by price (second filter)
+    # Perform price-based filtering
     jal filter_by_price
 
-# ===================== AMENITIES FILTER ===================== #
-
-    # Ask if user wants to filter by amenities
+    # ===================== AMENITIES FILTER PHASE ==================== #
+    # Ask user if they want to filter by amenities
 amenities_choice:
     li $v0, 4
     la $a0, prompt_amenities_choice
@@ -273,23 +271,24 @@ amenities_choice:
     
     li $v0, 5
     syscall
-    beq $v0, 0, print_results  # Skip amenities filter if 0
+    beq $v0, 0, print_results      # Skip if no amenities filter
     beq $v0, 1, do_amenities_filter
     j invalid_amenities_choice
 
 invalid_amenities_choice:
+    # Handle invalid amenities choice
     li $v0, 4
     la $a0, invalid_input_msg
     syscall
-    j amenities_choice
+    j amenities_choice             # Retry input
 
 do_amenities_filter:
-    # Display amenities choices
+    # Display amenities choices header
     li $v0, 4
     la $a0, amenities_choices
     syscall
     
-    # Open and print amenities master file
+    # Open and display amenities master file
     li $v0, 13
     la $a0, amenities_master
     li $a1, 0
@@ -297,25 +296,29 @@ do_amenities_filter:
     bltz $v0, file_error
     move $s0, $v0
     
+    # Read amenities data into buffer
     li $v0, 14
     move $a0, $s0
     la $a1, amenities_masterlist
     li $a2, 1024
     syscall
     
+    # Close amenities file
     li $v0, 16
     move $a0, $s0
     syscall
     
+    # Display available amenities options
     li $v0, 4
     la $a0, amenities_masterlist
     syscall
     
-    # Get amenities IDs from user
+    # Instruct user on input format
     li $v0, 4
     la $a0, prompt_instruction
     syscall
     
+    # Get user's amenities preferences
     li $v0, 4
     la $a0, prompt_amenities
     syscall
@@ -325,19 +328,18 @@ do_amenities_filter:
     li $a1, 32 
     syscall
 
-    # Filter by amenities (fourth filter)
+    # Perform amenities-based filtering
     jal filter_by_amenities
 
 ###############################################################################
-# PRINT_RESULTS                                                               #
-# Description: Displays the final filtered results                            #
+# DISPLAY FINAL RESULTS                                                       #
+# Shows the filtered results to the user                                      #
 ###############################################################################
-
 print_results:
-    # Print final results
+    # Print all matching dormitories
     jal print_final_results
 
-    # Ask if user wants to search again
+    # Offer option to search again
 try_again:
     li $v0, 4
     la $a0, try_again_msg
@@ -346,26 +348,25 @@ try_again:
     li $v0, 5
     syscall
     
-    beq $v0, 1, find_boarding
-    beq $v0, 0, exit_program
-    j invalid_try_again_input
+    beq $v0, 1, find_boarding    # Start new search
+    beq $v0, 0, exit_program     # Exit program
+    j invalid_try_again_input    # Handle invalid input
 
 invalid_try_again_input:
     li $v0, 4
     la $a0, invalid_input_msg
     syscall
-    j try_again
+    j try_again                 # Retry input
 
 exit_program:
-    # Exit program
+    # Terminate program execution
     li $v0, 10
     syscall
 
 ###############################################################################
-# FILE_ERROR                                                                  #
-# Description: Handles file operation errors                                  #
+# FILE_ERROR HANDLER                                                          #
+# Displays error message when file operations fail                           #
 ###############################################################################
-
 file_error:
     li $v0, 4
     la $a0, file_error_msg
@@ -373,14 +374,11 @@ file_error:
     j try_again
 
 ###############################################################################
-# CLEAR_BUFFERS                                                               #
-# Description: Clears all data buffers before a new search                    #
-# Registers used:                                                             #
-#   $t0 - Buffer pointer                                                      #
-#   $t1 - Counter                                                             #
+# CLEAR_BUFFERS FUNCTION                                                     #
+# Resets all data buffers before a new search                                 #
 ###############################################################################
 clear_buffers:
-    # Clear filtered_dorm1
+    # Clear filtered_dorm1 buffer
     la $t0, filtered_dorm1
     li $t1, 2048
 clear_loop1:
@@ -389,7 +387,7 @@ clear_loop1:
     subiu $t1, $t1, 1
     bnez $t1, clear_loop1
     
-    # Clear filtered_dorm2
+    # Clear filtered_dorm2 buffer
     la $t0, filtered_dorm2
     li $t1, 2048
 clear_loop2:
@@ -398,7 +396,7 @@ clear_loop2:
     subiu $t1, $t1, 1
     bnez $t1, clear_loop2
     
-    # Clear filtered_dorm3
+    # Clear filtered_dorm3 buffer
     la $t0, filtered_dorm3
     li $t1, 2048
 clear_loop3:
@@ -407,7 +405,7 @@ clear_loop3:
     subiu $t1, $t1, 1
     bnez $t1, clear_loop3
     
-    # Clear filtered_dorm4
+    # Clear filtered_dorm4 buffer
     la $t0, filtered_dorm4
     li $t1, 2048
 clear_loop4:
@@ -416,7 +414,7 @@ clear_loop4:
     subiu $t1, $t1, 1
     bnez $t1, clear_loop4
     
-    # Clear final_results
+    # Clear final_results buffer
     la $t0, final_results
     li $t1, 4096
 clear_loop5:
@@ -428,18 +426,13 @@ clear_loop5:
     jr $ra
 
 ###############################################################################
-# FILTER_BY_LOCATION                                                          #
-# Description: Filters dorms by selected location                             #
+# FILTER_BY_LOCATION FUNCTION                                                #
+# Filters dormitories based on user's location preference                     #
 # Input: $s1 - Selected location ID                                           #
 # Output: filtered_dorm1 - List of dorms in selected location                 #
-# Registers used:                                                             #
-#   $s0 - File descriptor                                                     #
-#   $t1 - File data pointer                                                   #
-#   $s3 - Filtered dorms buffer pointer                                       #
-#   $t2-$t6 - Temporary registers                                             #
 ###############################################################################
 filter_by_location:
-    # Open boarding locations file
+    # Open boarding locations mapping file
     li $v0, 13
     la $a0, boarding_locations
     li $a1, 0
@@ -447,52 +440,56 @@ filter_by_location:
     bltz $v0, file_error
     move $s0, $v0
 
-    # Read file content
+    # Read file contents into buffer
     li $v0, 14
     move $a0, $s0
     la $a1, read_buffer
     li $a2, 2048
     syscall
 
-    # Close file
+    # Close the file
     li $v0, 16
     move $a0, $s0
     syscall
     
-    la $t1, read_buffer       # File data pointer
-    la $s3, filtered_dorm1    # Filtered dorms buffer
+    # Initialize pointers for processing
+    la $t1, read_buffer       # Pointer to file data
+    la $s3, filtered_dorm1    # Pointer to results buffer
 
 location_search_loop:
+    # Check for end of file
     lb $t3, 0($t1)
     beqz $t3, location_filter_done
     
-    # Check if first character matches location choice
+    # Compare location ID with user selection
     subi $t4, $t3, 48         # Convert ASCII to integer
-    bne $t4, $s1, location_skip_line
+    bne $t4, $s1, location_skip_line  # Skip if no match
     
-    # Found matching location, copy dorm name
+    # Found matching location - copy dorm name
     addiu $t1, $t1, 2         # Skip location number and space
-    la $t2, name_buffer1
+    la $t2, name_buffer1      # Temporary name buffer
 
 copy_dorm_name:
-    lb $t5, 0($t1)            # Load byte from source
-    beq $t5, 10, location_store_dorm  # Newline
-    beqz $t5, location_store_dorm     # Null terminator
-    sb $t5, 0($t2)            # Store byte in name buffer
-    sb $t5, 0($s3)            # Also store in filtered_dorm1
+    lb $t5, 0($t1)            # Read next character
+    beq $t5, 10, location_store_dorm  # Stop at newline
+    beqz $t5, location_store_dorm      # Stop at null terminator
+    sb $t5, 0($t2)            # Store in name buffer
+    sb $t5, 0($s3)            # Store in results buffer
     addiu $t1, $t1, 1
     addiu $t2, $t2, 1
     addiu $s3, $s3, 1
     j copy_dorm_name
 
 location_store_dorm:
-    li $t6, '|'               # Add delimiter
+    # Add delimiter between dorm names
+    li $t6, '|'               
     sb $t6, 0($s3)
     addiu $s3, $s3, 1
     sb $zero, 0($t2)          # Null-terminate name buffer
     j location_advance_line
 
 location_skip_line:
+    # Skip to next line
     lb $t3, 0($t1)
     beqz $t3, location_filter_done
     beq $t3, 10, location_advance_line
@@ -500,12 +497,15 @@ location_skip_line:
     j location_skip_line
 
 location_advance_line:
+    # Move to next line in file
     addiu $t1, $t1, 1
     j location_search_loop
 
 location_filter_done:
-    sb $zero, 0($s3)          # Null-terminate filtered_dorm1
+    # Terminate the results buffer
+    sb $zero, 0($s3)          
     
+    # Debug output (can be removed)
     li $v0, 4
     la $a0, newLine
     syscall
@@ -514,15 +514,18 @@ location_filter_done:
     
     jr $ra
 
-# --------------------------------------------------
-# Filter by proximity (third filter)
-# --------------------------------------------------
+###############################################################################
+# FILTER_BY_PROXIMITY FUNCTION                                               #
+# Filters dormitories based on nearby amenities/proximities                   #
+# Uses results from location filter as input                                  #
+# Output: filtered_dorm3 - List of dorms matching proximity criteria          #
+###############################################################################
 filter_by_proximity:
-    # Initialize filtered_dorm3 pointer
+    # Initialize filtered results pointer
     la $s4, filtered_dorm3
     sw $s4, current_filter_ptr
 
-    # Open boarding proximity file
+    # Open proximity mapping file
     li $v0, 13
     la $a0, boarding_proximity
     li $a1, 0
@@ -530,23 +533,24 @@ filter_by_proximity:
     bltz $v0, file_error
     move $s0, $v0
     
-    # Read file content
+    # Read proximity data
     li $v0, 14
     move $a0, $s0
     la $a1, line_buffer
     li $a2, 1024
     syscall
     
-    # Close file
+    # Close proximity file
     li $v0, 16
     move $a0, $s0
     syscall
     
+    # Initialize processing pointers
     la $t1, line_buffer       # File data pointer
     la $s3, filtered_dorm1    # Dorms from location filter
 
 proximity_process_dorms:
-    # Copy dorm name from filtered_dorm1 to name_buffer1
+    # Copy dorm name to temporary buffer
     la $t3, name_buffer1 
 
 proximity_copy_dorm_loop:
@@ -559,15 +563,16 @@ proximity_copy_dorm_loop:
     j proximity_copy_dorm_loop
 
 proximity_end_dorm_copy:
-    sb $zero, 0($t3)          # Null-terminate dorm name
-    addiu $s3, $s3, 1         # Move past '|'
+    sb $zero, 0($t3)          # Null-terminate name
+    addiu $s3, $s3, 1         # Move past delimiter
 
-    # Find matching dorm in proximity file
+    # Search for dorm in proximity file
     la $t1, line_buffer       # Reset file pointer
     j proximity_find_dorm_in_file
 
 proximity_find_dorm_in_file:
-    la $t4, name_buffer2      # Destination buffer
+    # Extract dorm name from proximity file
+    la $t4, name_buffer2      # Comparison buffer
 
 proximity_copy_name_loop:
     lb $t6, 0($t1)
@@ -580,7 +585,7 @@ proximity_copy_name_loop:
     j proximity_copy_name_loop
 
 proximity_end_name_copy:
-    sb $zero, 0($t4)          # Null-terminate dorm name
+    sb $zero, 0($t4)          # Null-terminate name
 
     # Compare dorm names
     la $t3, name_buffer1
@@ -590,15 +595,15 @@ proximity_compare_names:
     lb $t5, 0($t3)
     lb $t6, 0($t4)
     bne $t5, $t6, proximity_not_match
-    beqz $t5, proximity_extract_ids  # Full match
+    beqz $t5, proximity_extract_ids  # Names match
     addiu $t3, $t3, 1
     addiu $t4, $t4, 1
     j proximity_compare_names
 
 proximity_extract_ids:
-    # Found matching dorm, extract proximity IDs
+    # Extract proximity IDs for matching dorm
     la $t7, proximity_buffer
-    addiu $t1, $t1, 1         # Move past '|'
+    addiu $t1, $t1, 1         # Move past delimiter
     
 proximity_extract_ids_loop:
     lb $t6, 0($t1)
@@ -610,14 +615,14 @@ proximity_extract_ids_loop:
     j proximity_extract_ids_loop
 
 proximity_compare_ids:
-    sb $zero, 0($t7)          # Null-terminate proximity IDs
+    sb $zero, 0($t7)          # Null-terminate IDs
     
-    # Process user input IDs
+    # Process user's proximity preferences
     la $t0, id_buffer         # User input buffer
     li $t9, 0                 # Match counter
     
 proximity_process_input:
-    # Skip leading spaces
+    # Skip whitespace in input
     lb $t2, 0($t0)
     beqz $t2, proximity_check_count
     beq $t2, 10, proximity_check_count
@@ -629,7 +634,7 @@ proximity_skip_space:
     j proximity_process_input
 
 proximity_start_compare:
-    # Extract one ID from user input
+    # Extract single ID from user input
     li $t3, 0
     la $t4, id_buffer_temp
 
@@ -645,16 +650,16 @@ proximity_extract_user_id:
     j proximity_extract_user_id
 
 proximity_compare_single:
-    sb $zero, 0($t4)          # Null-terminate single ID
+    sb $zero, 0($t4)          # Null-terminate ID
     beqz $t3, proximity_process_input
     
-    # Compare this ID with all proximity IDs
+    # Compare user ID with dorm's proximity IDs
     la $t4, id_buffer_temp
     la $t7, proximity_buffer
 
 proximity_compare_loop:
-    lb $t5, 0($t4)            # User ID char
-    lb $t6, 0($t7)            # Proximity ID char
+    lb $t5, 0($t4)            # User ID character
+    lb $t6, 0($t7)            # Dorm proximity character
     
     beq $t6, ' ', proximity_check_full
     beqz $t6, proximity_check_full
@@ -665,13 +670,15 @@ proximity_compare_loop:
     j proximity_compare_loop
 
 proximity_check_full:
+    # Check if entire ID matched
     lb $t5, 0($t4)
     beqz $t5, proximity_found_match
     j proximity_next_id
 
 proximity_found_match:
-    addiu $t9, $t9, 1         # Increment match count
-    li $t8, 2
+    # Count matching proximity requirements
+    addiu $t9, $t9, 1         
+    li $t8, 2                 # Minimum matches required
     bge $t9, $t8, proximity_store_qualified
     
 proximity_next_id:
@@ -684,16 +691,17 @@ proximity_next_id:
 
 proximity_skip_prox_space:
     addiu $t7, $t7, 1         # Skip space
-    la $t4, id_buffer_temp    # Reset user ID pointer
+    la $t4, id_buffer_temp    # Reset comparison
     j proximity_compare_loop
 
 proximity_check_count:
+    # Check if enough matches found
     li $t8, 2
     bge $t9, $t8, proximity_store_qualified
     j proximity_not_match
 
 proximity_store_qualified:
-    # Store qualified dorm in filtered_dorm3
+    # Add qualifying dorm to results
     lw $s4, current_filter_ptr
     la $t3, name_buffer1
     
@@ -706,7 +714,8 @@ proximity_copy_qualified:
     j proximity_copy_qualified
 
 proximity_done_copy:
-    li $t5, '|'               # Add delimiter
+    # Add delimiter between names
+    li $t5, '|'               
     sb $t5, 0($s4)
     addiu $s4, $s4, 1
     sb $zero, 0($s4)          # Null-terminate
@@ -714,6 +723,7 @@ proximity_done_copy:
 
 proximity_not_match:
 proximity_skip_to_next:
+    # Skip to next line in file
     lb $t5, 0($t1)
     beqz $t5, proximity_next_dorm
     beq $t5, 10, proximity_prepare_next
@@ -725,23 +735,27 @@ proximity_prepare_next:
     j proximity_find_dorm_in_file
 
 proximity_next_dorm:
-    # Move to next dorm in filtered_dorm1
+    # Process next dorm from location filter
     lb $t5, 0($s3)
     beqz $t5, proximity_filter_done
     j proximity_process_dorms
 
 proximity_filter_done:
-	li $v0, 4
+    # Debug output (can be removed)
+    li $v0, 4
     la $a0, newLine
     syscall
     la $a0, filtered_dorm3
     jr $ra
 
-# --------------------------------------------------
-# Filter by price (second filter)
-# --------------------------------------------------
+###############################################################################
+# FILTER_BY_PRICE FUNCTION                                                   #
+# Filters dormitories based on user's maximum budget                          #
+# Uses results from proximity filter as input                                 #
+# Output: final_results - List of dorms within budget                         #
+###############################################################################
 filter_by_price:
-    # Open price file
+    # Open price data file
     li $v0, 13
     la $a0, price_master
     li $a1, 0
@@ -749,26 +763,26 @@ filter_by_price:
     bltz $v0, file_error
     move $s0, $v0
 
-    # Read file content
+    # Read price data
     li $v0, 14
     move $a0, $s0
     la $a1, line_buffer
     li $a2, 1024
     syscall
 
-    # Close file
+    # Close price file
     li $v0, 16
     move $a0, $s0
     syscall
 
-    # Set up pointers
-    la $t1, line_buffer       # File data
+    # Initialize processing pointers
+    la $t1, line_buffer       # Price file data
     la $s3, filtered_dorm3    # Dorms from proximity filter
     la $s5, final_results     # Final results buffer
 
 price_process_dorms:
-    # Copy dorm name from filtered_dorm3 to name_buffer1
-    la $t3, name_buffer1
+    # Copy dorm name to buffer
+    la $t3, name_buffer1 
 
 price_copy_dorm_loop:
     lb $t5, 0($s3)
@@ -780,15 +794,16 @@ price_copy_dorm_loop:
     j price_copy_dorm_loop
 
 price_end_dorm_copy:
-    sb $zero, 0($t3)          # Null-terminate dorm name
-    addiu $s3, $s3, 1         # Move past '|'
+    sb $zero, 0($t3)          # Null-terminate name
+    addiu $s3, $s3, 1         # Move past delimiter
 
-    # Find matching dorm in price file
+    # Find dorm in price file
     la $t1, line_buffer       # Reset file pointer
     j price_find_dorm_in_file
 
 price_find_dorm_in_file:
-    la $t4, name_buffer2      # Destination buffer
+    # Extract name from price file
+    la $t4, name_buffer2      # Comparison buffer
 
 price_copy_name_loop:
     lb $t6, 0($t1)
@@ -801,7 +816,7 @@ price_copy_name_loop:
     j price_copy_name_loop
 
 price_end_name_copy:
-    sb $zero, 0($t4)          # Null-terminate dorm name
+    sb $zero, 0($t4)          # Null-terminate name
 
     # Compare dorm names
     la $t3, name_buffer1
@@ -811,15 +826,15 @@ price_compare_names:
     lb $t5, 0($t3)
     lb $t6, 0($t4)
     bne $t5, $t6, price_not_match
-    beqz $t5, price_extract_price
+    beqz $t5, price_extract_price  # Names match
     addiu $t3, $t3, 1
     addiu $t4, $t4, 1
     j price_compare_names
 
 price_extract_price:
-    # Found matching dorm, extract price
+    # Extract price for matching dorm
     la $t7, price_buffer
-    addiu $t1, $t1, 1         # Move past '|'
+    addiu $t1, $t1, 1         # Move past delimiter
     
 price_extract_price_loop:
     lb $t6, 0($t1)
@@ -836,6 +851,7 @@ price_convert:
     li $t9, 0                 # Initialize price accumulator
 
 price_str2int:
+    # Convert price string to integer
     lb $t6, 0($t7)
     beqz $t6, price_compare
     li $t3, '0'
@@ -849,11 +865,12 @@ price_str2int:
     j price_str2int
 
 price_compare:
+    # Check if price is within budget
     ble $t9, $s2, price_store_final  # If price <= max budget
     j price_not_match
 
 price_store_final:
-    # Store dorm in final results
+    # Add dorm to final results
     la $t3, name_buffer1
     
 price_copy_final:
@@ -865,13 +882,15 @@ price_copy_final:
     j price_copy_final
 
 price_done_copy:
-    li $t5, '|'               # Add delimiter
+    # Add delimiter between names
+    li $t5, '|'               
     sb $t5, 0($s5)
     addiu $s5, $s5, 1
     sb $zero, 0($s5)          # Null-terminate
 
 price_not_match:
 price_skip_to_next:
+    # Skip to next line in file
     lb $t5, 0($t1)
     beqz $t5, price_next_dorm
     beq $t5, 10, price_prepare_next
@@ -883,28 +902,32 @@ price_prepare_next:
     j price_find_dorm_in_file
 
 price_next_dorm:
-    # Move to next dorm in filtered_dorm3
+    # Process next dorm from proximity filter
     lb $t5, 0($s3)
     beqz $t5, price_filter_done
     j price_process_dorms
 
 price_filter_done:
-	li $v0, 4
+    # Debug output (can be removed)
+    li $v0, 4
     la $a0, newLine
     syscall
     la $a0, filtered_dorm2
     syscall
     jr $ra
 
-# --------------------------------------------------
-# Filter by amenities (fourth filter)
-# --------------------------------------------------
+###############################################################################
+# FILTER_BY_AMENITIES FUNCTION                                               #
+# Optional filter based on dorm amenities                                     #
+# Uses results from price filter as input                                     #
+# Output: final_results - List of dorms with required amenities               #
+###############################################################################
 filter_by_amenities:
-    # Initialize filtered_dorm4 pointer
+    # Initialize amenities filter pointer
     la $s6, filtered_dorm4
     sw $s6, current_filter_ptr
 
-    # Open boarding amenities file
+    # Open amenities mapping file
     li $v0, 13
     la $a0, boarding_amenities
     li $a1, 0
@@ -912,23 +935,24 @@ filter_by_amenities:
     bltz $v0, file_error
     move $s0, $v0
     
-    # Read file content
+    # Read amenities data
     li $v0, 14
     move $a0, $s0
     la $a1, line_buffer
     li $a2, 1024
     syscall
     
-    # Close file
+    # Close amenities file
     li $v0, 16
     move $a0, $s0
     syscall
     
+    # Initialize processing pointers
     la $t1, line_buffer       # File data pointer
     la $s3, final_results     # Dorms from price filter
 
 amenities_process_dorms:
-    # Copy dorm name from final_results to name_buffer1
+    # Copy dorm name to buffer
     la $t3, name_buffer1 
 
 amenities_copy_dorm_loop:
@@ -941,15 +965,16 @@ amenities_copy_dorm_loop:
     j amenities_copy_dorm_loop
 
 amenities_end_dorm_copy:
-    sb $zero, 0($t3)          # Null-terminate dorm name
-    addiu $s3, $s3, 1         # Move past '|'
+    sb $zero, 0($t3)          # Null-terminate name
+    addiu $s3, $s3, 1         # Move past delimiter
 
-    # Find matching dorm in amenities file
+    # Find dorm in amenities file
     la $t1, line_buffer       # Reset file pointer
     j amenities_find_dorm_in_file
 
 amenities_find_dorm_in_file:
-    la $t4, name_buffer2      # Destination buffer
+    # Extract name from amenities file
+    la $t4, name_buffer2      # Comparison buffer
 
 amenities_copy_name_loop:
     lb $t6, 0($t1)
@@ -962,7 +987,7 @@ amenities_copy_name_loop:
     j amenities_copy_name_loop
 
 amenities_end_name_copy:
-    sb $zero, 0($t4)          # Null-terminate dorm name
+    sb $zero, 0($t4)          # Null-terminate name
 
     # Compare dorm names
     la $t3, name_buffer1
@@ -972,15 +997,15 @@ amenities_compare_names:
     lb $t5, 0($t3)
     lb $t6, 0($t4)
     bne $t5, $t6, amenities_not_match
-    beqz $t5, amenities_extract_amenities  # Full match
+    beqz $t5, amenities_extract_amenities  # Names match
     addiu $t3, $t3, 1
     addiu $t4, $t4, 1
     j amenities_compare_names
 
 amenities_extract_amenities:
-    # Found matching dorm, extract amenities IDs
+    # Extract amenities IDs for matching dorm
     la $t7, amenities_buffer
-    addiu $t1, $t1, 1         # Move past '|'
+    addiu $t1, $t1, 1         # Move past delimiter
     
 amenities_extract_amenities_loop:
     lb $t6, 0($t1)
@@ -994,12 +1019,12 @@ amenities_extract_amenities_loop:
 amenities_compare_amenities:
     sb $zero, 0($t7)          # Null-terminate amenities IDs
     
-    # Process user input IDs
+    # Process user's amenities preferences
     la $t0, id_buffer         # User input buffer
     li $t9, 0                 # Match counter
     
 amenities_process_input:
-    # Skip leading spaces
+    # Skip whitespace in input
     lb $t2, 0($t0)
     beqz $t2, amenities_check_count
     beq $t2, 10, amenities_check_count
@@ -1011,7 +1036,7 @@ amenities_skip_space:
     j amenities_process_input
 
 amenities_start_compare:
-    # Extract one ID from user input
+    # Extract single ID from user input
     li $t3, 0
     la $t4, id_buffer_temp
 
@@ -1027,16 +1052,16 @@ amenities_extract_user_id:
     j amenities_extract_user_id
 
 amenities_compare_single:
-    sb $zero, 0($t4)          # Null-terminate single ID
+    sb $zero, 0($t4)          # Null-terminate ID
     beqz $t3, amenities_process_input
     
-    # Compare this ID with all amenities IDs
+    # Compare user ID with dorm's amenities
     la $t4, id_buffer_temp
     la $t7, amenities_buffer
 
 amenities_compare_loop:
-    lb $t5, 0($t4)            # User ID char
-    lb $t6, 0($t7)            # Amenities ID char
+    lb $t5, 0($t4)            # User ID character
+    lb $t6, 0($t7)            # Dorm amenity character
     
     beq $t6, ' ', amenities_check_full
     beqz $t6, amenities_check_full
@@ -1047,13 +1072,15 @@ amenities_compare_loop:
     j amenities_compare_loop
 
 amenities_check_full:
+    # Check if entire ID matched
     lb $t5, 0($t4)
     beqz $t5, amenities_found_match
     j amenities_next_id
 
 amenities_found_match:
+    # Count matching amenities
     addiu $t9, $t9, 1         # Increment match count
-    li $t8, 1                 # At least 1 match required
+    li $t8, 1                 # Minimum matches required
     bge $t9, $t8, amenities_store_qualified
     
 amenities_next_id:
@@ -1066,16 +1093,17 @@ amenities_next_id:
 
 amenities_skip_amenities_space:
     addiu $t7, $t7, 1         # Skip space
-    la $t4, id_buffer_temp    # Reset user ID pointer
+    la $t4, id_buffer_temp    # Reset comparison
     j amenities_compare_loop
 
 amenities_check_count:
+    # Check if enough amenities matched
     li $t8, 1
     bge $t9, $t8, amenities_store_qualified
     j amenities_not_match
 
 amenities_store_qualified:
-    # Store qualified dorm in filtered_dorm4
+    # Add qualifying dorm to results
     lw $s6, current_filter_ptr
     la $t3, name_buffer1
     
@@ -1088,7 +1116,8 @@ amenities_copy_qualified:
     j amenities_copy_qualified
 
 amenities_done_copy:
-    li $t5, '|'               # Add delimiter
+    # Add delimiter between names
+    li $t5, '|'               
     sb $t5, 0($s6)
     addiu $s6, $s6, 1
     sb $zero, 0($s6)          # Null-terminate
@@ -1096,6 +1125,7 @@ amenities_done_copy:
 
 amenities_not_match:
 amenities_skip_to_next:
+    # Skip to next line in file
     lb $t5, 0($t1)
     beqz $t5, amenities_next_dorm
     beq $t5, 10, amenities_prepare_next
@@ -1107,13 +1137,13 @@ amenities_prepare_next:
     j amenities_find_dorm_in_file
 
 amenities_next_dorm:
-    # Move to next dorm in final_results
+    # Process next dorm from price filter
     lb $t5, 0($s3)
     beqz $t5, amenities_filter_done
     j amenities_process_dorms
 
 amenities_filter_done:
-    # Copy filtered_dorm4 to final_results
+    # Copy filtered results to final buffer
     la $s5, final_results
     la $s6, filtered_dorm4
     
@@ -1129,20 +1159,23 @@ copy_done:
     sb $zero, 0($s5)          # Null-terminate final results
     jr $ra
 
-# ----------------------------------------------------------------------#
-# Print final results from boarding_details.txt (using ! as delimiter)	#
-# ----------------------------------------------------------------------#
+###############################################################################
+# PRINT_FINAL_RESULTS FUNCTION                                               #
+# Displays detailed information for all matching dormitories                  #
+# Reads from boarding_details.txt using '!' as record delimiter               #
+###############################################################################
 print_final_results:
+    # Print results header
     li $v0, 4
     la $a0, results_header
     syscall
     
-    # Check if there are any results
+    # Check if any results exist
     la $t0, final_results
     lb $t1, 0($t0)
     beqz $t1, print_no_results
     
-    # Open boarding_details file
+    # Open detailed information file
     li $v0, 13
     la $a0, boarding_details
     li $a1, 0
@@ -1150,23 +1183,23 @@ print_final_results:
     bltz $v0, file_error
     move $s0, $v0
     
-    # Read entire file content
+    # Read entire file contents
     li $v0, 14
     move $a0, $s0
     la $a1, read_buffer
     li $a2, 4096
     syscall
     
-    # Close file
+    # Close details file
     li $v0, 16
     move $a0, $s0
     syscall
     
-    # Process each dorm in final_results
+    # Process each dorm in final results
     la $s1, final_results
     
 print_next_dorm:
-    # Extract next dorm name
+    # Extract next dorm name from results
     la $t0, name_buffer1
     li $t1, 0
     
@@ -1182,13 +1215,13 @@ copy_dorm_name_loop:
     
 end_copy_name:
     sb $zero, 0($t0)         # Null-terminate name
-    addiu $s1, $s1, 1        # Skip '|'
+    addiu $s1, $s1, 1        # Skip delimiter
     
     # Search for dorm in details file
     la $s2, read_buffer
     
 search_loop:
-    # Look for "Name: " pattern
+    # Look for "Name: " pattern in details
     lb $t3, 0($s2)
     beqz $t3, next_dorm      # End of file
     
@@ -1204,7 +1237,7 @@ search_loop:
     lb $t3, 5($s2)
     bne $t3, ' ', next_char
     
-    # Found "Name: ", now compare names
+    # Found "Name: " - compare names
     addiu $s2, $s2, 6       # Skip "Name: "
     la $t0, name_buffer1
     
@@ -1218,12 +1251,12 @@ compare_names:
     j compare_names
     
 found_match:
-    # Print from start of record (previous '!') to next '!'
+    # Print the complete dorm record
     li $v0, 4
     la $a0, newLine
     syscall
     
-    # Find start of record
+    # Find start of record (after previous '!')
     la $t5, read_buffer
     move $t6, $s2
     subiu $t6, $t6, 6       # Back to start of "Name: "
@@ -1239,6 +1272,7 @@ found_record_start:
     addiu $t6, $t6, 1       # Skip the '!'
     
 print_record:
+    # Print each character until next '!'
     li $v0, 11
     
 print_char:
@@ -1250,19 +1284,23 @@ print_char:
     j print_char
     
 end_record:
+    # Add newline after each record
     li $v0, 4
     la $a0, newLine
     syscall
     j next_dorm
        
 next_char:
+    # Continue searching file
     addiu $s2, $s2, 1
     j search_loop
     
 next_dorm:
+    # Process next dorm in results
     j print_next_dorm
     
 print_no_results:
+    # Notify user no matches were found
     li $v0, 4
     la $a0, no_match_msg
     syscall
